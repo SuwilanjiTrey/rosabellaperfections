@@ -257,7 +257,7 @@ export default function Admin() {
 
   const fetchBookings = async () => {
     try {
-      const q    = query(collection(db, 'bookings'), orderBy('createdAt', 'desc'))
+      const q    = query(collection(db, 'rosabellaBookings'), orderBy('createdAt', 'desc'))
       const snap = await getDocs(q)
       setBookings(snap.docs.map(d => ({ id: d.id, ...d.data() })))
     } catch (e) { console.error(e) }
@@ -978,6 +978,19 @@ function ProductForm({ product, onClose, onSaved, showToast }) {
   )
 }
 
+// ── Pill style for booking detail chips ──────────────────────────
+const pillStyle = {
+  background: 'var(--cream-dark)',
+  color: 'var(--text-mid)',
+  fontFamily: 'var(--font-ui)',
+  fontSize: '0.68rem',
+  padding: '3px 10px',
+  borderRadius: 'var(--radius-full)',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+}
+
 // ── Bookings tab ──────────────────────────────────────────────────
 function BookingsTab({ bookings, onRefresh }) {
   const STATUS_COLORS = {
@@ -988,7 +1001,7 @@ function BookingsTab({ bookings, onRefresh }) {
 
   const updateStatus = async (id, status) => {
     try {
-      await updateDoc(doc(db, 'bookings', id), { status, updatedAt: new Date().toISOString() })
+      await updateDoc(doc(db, 'rosabellaBookings', id), { status, updatedAt: new Date().toISOString() })
       onRefresh()
     } catch (e) { console.error(e) }
   }
@@ -1031,13 +1044,14 @@ function BookingsTab({ bookings, onRefresh }) {
                 padding: 16, boxShadow: 'var(--shadow-soft)',
                 border: '1px solid var(--cream-deeper)',
               }}>
+                {/* Header row: name + status badge */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 10 }}>
                   <div>
                     <p style={{ fontFamily: 'var(--font-display)', fontSize: '0.95rem', fontWeight: 500, color: 'var(--text-dark)', marginBottom: 2 }}>
                       {b.name || 'Anonymous'}
                     </p>
                     <p style={{ fontFamily: 'var(--font-ui)', fontSize: '0.7rem', color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                      {b.eventType || 'Event booking'} · {b.date || '—'}
+                      {b.eventType || 'Event booking'} · {b.eventDate || b.date || '—'}
                     </p>
                   </div>
                   <span style={{
@@ -1050,29 +1064,59 @@ function BookingsTab({ bookings, onRefresh }) {
                   </span>
                 </div>
 
-                {b.message && (
-                  <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.85rem', color: 'var(--text-light)', lineHeight: 1.5, marginBottom: 12 }}>
-                    {b.message}
+                {/* Detail pills */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+                  {b.guestCount && (
+                    <span style={pillStyle}>👥 {b.guestCount} guests</span>
+                  )}
+                  {b.budget && (
+                    <span style={pillStyle}>💰 {b.budget}</span>
+                  )}
+                  {b.servicesLabel && (
+                    <span style={{ ...pillStyle, maxWidth: '100%' }}>🛠 {b.servicesLabel}</span>
+                  )}
+                </div>
+
+                {/* Notes */}
+                {b.notes && (
+                  <p style={{
+                    fontFamily: 'var(--font-body)', fontSize: '0.83rem',
+                    color: 'var(--text-light)', lineHeight: 1.5,
+                    marginBottom: 10, fontStyle: 'italic',
+                    borderLeft: '3px solid var(--pink-pale)', paddingLeft: 10,
+                  }}>
+                    {b.notes}
                   </p>
                 )}
 
+                {/* Contact links */}
                 {(b.phone || b.email) && (
                   <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 12 }}>
-                    {b.phone && <a href={`tel:${b.phone}`} style={{ fontFamily: 'var(--font-ui)', fontSize: '0.75rem', color: 'var(--pink)', textDecoration: 'none' }}>📞 {b.phone}</a>}
-                    {b.email && <a href={`mailto:${b.email}`} style={{ fontFamily: 'var(--font-ui)', fontSize: '0.75rem', color: 'var(--pink)', textDecoration: 'none' }}>✉ {b.email}</a>}
+                    {b.phone && (
+                      <a href={`https://wa.me/${b.phone.replace(/\D/g,'')}`} target="_blank" rel="noopener noreferrer"
+                        style={{ fontFamily: 'var(--font-ui)', fontSize: '0.75rem', color: '#25D366', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
+                        💬 {b.phone}
+                      </a>
+                    )}
+                    {b.email && (
+                      <a href={`mailto:${b.email}`}
+                        style={{ fontFamily: 'var(--font-ui)', fontSize: '0.75rem', color: 'var(--pink)', textDecoration: 'none' }}>
+                        ✉ {b.email}
+                      </a>
+                    )}
                   </div>
                 )}
 
                 {/* Status actions */}
-                <div style={{ display: 'flex', gap: 6 }}>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                   {['pending', 'confirmed', 'cancelled'].map(s => (
                     <button key={s} onClick={() => updateStatus(b.id, s)} style={{
-                      padding: '5px 10px', borderRadius: 'var(--radius-full)',
+                      padding: '5px 12px', borderRadius: 'var(--radius-full)',
                       border: `1px solid ${(b.status || 'pending') === s ? sc.color : 'var(--cream-deeper)'}`,
                       background: (b.status || 'pending') === s ? sc.bg : 'transparent',
                       color: (b.status || 'pending') === s ? sc.color : 'var(--text-light)',
                       fontFamily: 'var(--font-ui)', fontSize: '0.65rem', textTransform: 'capitalize',
-                      cursor: 'pointer',
+                      cursor: 'pointer', fontWeight: (b.status || 'pending') === s ? 700 : 400,
                     }}>
                       {s}
                     </button>

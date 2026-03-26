@@ -1,10 +1,10 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 const EVENTS = [
   {
     icon: '🎂',
-    image: '/images/event_planning3.jpeg',
+    image: '/images/event_planning2.jpeg',
     title: 'Birthday Parties',
     desc: 'From intimate gatherings to grand celebrations — balloon arches, cake tables, custom décor and more.',
     includes: ['Balloon installation', 'Table & linen setup', 'Cake table styling', 'Custom signage'],
@@ -12,7 +12,7 @@ const EVENTS = [
   },
   {
     icon: '👶',
-    image: '/images/event_planning3.jpeg',
+    image: '/images/event_planning1.jpeg',
     title: 'Baby Showers',
     desc: 'Sweet, soft and magical. We create the perfect ambiance for welcoming your little one.',
     includes: ['Gender reveal setup', 'Floral arrangements', 'Dessert table', 'Memory corner'],
@@ -20,7 +20,7 @@ const EVENTS = [
   },
   {
     icon: '💍',
-    image: '/images/event_planning3.jpeg',
+    image: '/images/event_planning6.jpeg',
     title: 'Bridal Showers',
     desc: 'Celebrate the bride-to-be with elegance, flowers, and a setup she\'ll remember forever.',
     includes: ['Floral backdrop', 'Gift table setup', 'Bubbly station', 'Photo corner'],
@@ -28,15 +28,15 @@ const EVENTS = [
   },
   {
     icon: '🕯️',
-    image: '/images/event_planning3.jpeg',
-    title: 'Romantic Dinners',
-    desc: 'An intimate candlelit setup for two — roses, soft lighting and every detail perfected.',
-    includes: ['Rose petal arrangement', 'Candle setup', 'Floral centrepiece', 'Mood lighting'],
+    image: '/images/event_planning7.jpeg',
+    title: 'Wedding Events',
+    desc: 'An intimate, vibrant setup — roses, soft lighting and every detail perfected.',
+    includes: ['Rose petal arrangement', 'Wedding Decor', 'Floral centrepiece', 'Mood lighting'],
     from: 950,
   },
   {
     icon: '🎓',
-    image: '/images/event_planning3.jpeg',
+    image: '/images/event_planning8.jpeg',
     title: 'Graduation Parties',
     desc: 'Mark the milestone in style with personalised décor, a custom cake and celebration setup.',
     includes: ['Themed décor', 'Photo wall', 'Dessert spread', 'Custom cake'],
@@ -44,7 +44,7 @@ const EVENTS = [
   },
   {
     icon: '🌸',
-    image: '/images/event_planning3.jpeg',
+    image: '/images/event_planning5.jpeg',
     title: 'Custom Events',
     desc: 'Have something unique in mind? We bring any vision to life — just tell us your dream.',
     includes: ['Consultation included', 'Fully bespoke design', 'Flexible packages', 'Full coordination'],
@@ -60,8 +60,79 @@ const PROCESS = [
 ]
 
 export default function Events() {
+  const [lightbox, setLightbox] = useState(null) // { src, title } | null
+  const [activeCard, setActiveCard] = useState(null)
+
+
   return (
     <div className="page-enter" style={{ paddingTop: 88 }}>
+      {/* ── Lightbox — bottom sheet on mobile, centered modal on desktop ── */}
+	{/* ── Modal Viewer ── */}
+	{lightbox && (
+	  <div
+		onClick={() => setLightbox(null)}
+		style={{
+		  position: 'fixed',
+		  inset: 0,
+		  zIndex: 1000,
+		  background: 'rgba(0,0,0,0.85)',
+		  display: 'flex',
+		  alignItems: 'center',
+		  justifyContent: 'center',
+		  padding: 20,
+		  animation: 'fadeIn 0.2s ease',
+		}}
+	  >
+		<div
+		  onClick={(e) => e.stopPropagation()}
+		  style={{
+		    position: 'relative',
+		    maxWidth: '900px',
+		    width: '100%',
+		    maxHeight: '90vh',
+		    borderRadius: 16,
+		    overflow: 'hidden',
+		    background: '#000',
+		    boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+		  }}
+		>
+		  {/* Close button */}
+		  <button
+		    onClick={() => setLightbox(null)}
+		    style={{
+		      position: 'absolute',
+		      top: 12,
+		      right: 12,
+		      width: 36,
+		      height: 36,
+		      borderRadius: '50%',
+		      background: 'rgba(0,0,0,0.6)',
+		      color: 'white',
+		      border: '1px solid rgba(255,255,255,0.2)',
+		      fontSize: '1rem',
+		      cursor: 'pointer',
+		      zIndex: 2,
+		    }}
+		  >
+		    ✕
+		  </button>
+
+		  {/* Image */}
+		  <img
+		    src={lightbox.src}
+		    alt={lightbox.title}
+		    style={{
+		      width: '100%',
+		      height: '100%',
+		      objectFit: 'contain',
+		      maxHeight: '90vh',
+		    }}
+		  />
+		</div>
+	  </div>
+	)}
+
+
       {/* Hero */}
       <div style={{
         background: 'linear-gradient(135deg, var(--text-dark) 0%, #3d1a0d 100%)',
@@ -116,87 +187,132 @@ export default function Events() {
             gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
             gap: 24,
           }}>
-            {EVENTS.map((ev, i) => (
-              <div key={i} style={{
-                background: 'var(--white)',
-                borderRadius: 'var(--radius-lg)',
-                overflow: 'hidden',
-                boxShadow: 'var(--shadow-card)',
-                transition: 'var(--transition)',
-                display: 'flex', flexDirection: 'column',
-              }}
-                onMouseOver={e => e.currentTarget.style.transform = 'translateY(-6px)'}
-                onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
-              >
-                {/* Top colour band */}
-                <div style={{
-                  height: 120,
-                  background: `linear-gradient(135deg, var(--pink-pale), var(--cream-dark))`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '3.5rem',
-                }}>
-                  <img src={ev.image} alt={ev.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                </div>
+			{EVENTS.map((ev, i) => {
+			  const isActive = activeCard === i
 
-                <div style={{ padding: '24px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                  <h3 style={{
-                    fontFamily: 'var(--font-display)', fontSize: '1.2rem',
-                    fontWeight: 500, color: 'var(--text-dark)', marginBottom: 10,
-                  }}>
-                    {ev.title}
-                  </h3>
-                  <p style={{
-                    fontFamily: 'var(--font-body)', fontSize: '0.9rem',
-                    color: 'var(--text-light)', lineHeight: 1.6, marginBottom: 16,
-                  }}>
-                    {ev.desc}
-                  </p>
+			  return (
+				<div
+				  key={i}
+				  style={{
+					background: 'var(--white)',
+					borderRadius: 'var(--radius-lg)',
+					overflow: 'hidden',
+					boxShadow: 'var(--shadow-card)',
+					transition: 'all 0.4s ease',
+					display: 'flex',
+					flexDirection: 'column',
 
-                  {/* Includes */}
-                  <div style={{ flex: 1, marginBottom: 20 }}>
-                    {ev.includes.map((item, j) => (
-                      <div key={j} style={{
-                        display: 'flex', alignItems: 'center', gap: 8,
-                        marginBottom: 6,
-                      }}>
-                        <span style={{ color: 'var(--pink)', fontSize: '0.7rem' }}>✦</span>
-                        <span style={{
-                          fontFamily: 'var(--font-body)', fontSize: '0.88rem',
-                          color: 'var(--text-mid)',
-                        }}>{item}</span>
-                      </div>
-                    ))}
-                  </div>
+					// 🔥 expand card when active
+					transform: isActive ? 'scale(1.03)' : 'scale(1)',
+					zIndex: isActive ? 2 : 1,
+				  }}
+				>
+				  {/* Image (click to toggle) */}
+				  <div
+					onClick={() =>
+					  setActiveCard(isActive ? null : i)
+					}
+					style={{
+					  height: isActive ? 260 : 120,
+					  overflow: 'hidden',
+					  cursor: 'pointer',
+					  position: 'relative',
+					  transition: 'height 0.4s ease',
+					}}
+				  >
+					<img
+					  src={ev.image}
+					  alt={ev.title}
+					  style={{
+						width: '100%',
+						height: '100%',
+						objectFit: 'cover',
+						transition: 'transform 0.4s ease',
+					  }}
+					/>
 
-                  {/* Price & CTA */}
-                  <div style={{
-                    display: 'flex', alignItems: 'center',
-                    justifyContent: 'space-between',
-                    borderTop: '1px solid var(--cream-dark)',
-                    paddingTop: 16,
-                  }}>
-                    <div>
-                      <p style={{
-                        fontFamily: 'var(--font-ui)', fontSize: '0.65rem',
-                        letterSpacing: '0.1em', textTransform: 'uppercase',
-                        color: 'var(--text-light)', marginBottom: 2,
-                      }}>
-                        Starting from
-                      </p>
-                      <p style={{
-                        fontFamily: 'var(--font-display)', fontSize: '1.3rem',
-                        fontWeight: 600, color: ev.from ? 'var(--pink)' : 'var(--rose-gold)',
-                      }}>
-                        {ev.from ? `K${ev.from.toLocaleString()}` : 'Custom'}
-                      </p>
-                    </div>
-                    <Link to="/booking" className="btn-primary" style={{ padding: '10px 20px', fontSize: '0.75rem' }}>
-                      Book Now
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            ))}
+					{/* Hint */}
+					<span style={{
+					  position: 'absolute',
+					  bottom: 8,
+					  right: 8,
+					  background: 'rgba(0,0,0,0.5)',
+					  color: 'white',
+					  fontSize: '0.6rem',
+					  padding: '3px 8px',
+					  borderRadius: 4,
+					}}>
+					  {isActive ? 'tap to close' : 'tap to view'}
+					</span>
+				  </div>
+
+				  {/* Content (collapses when active) */}
+				  <div
+					style={{
+					  padding: '24px',
+					  maxHeight: isActive ? 0 : 500,
+					  opacity: activeCard !== null && !isActive ? 0.5 : 1,
+					  filter: activeCard !== null && !isActive ? 'blur(2px)' : 'none',
+					  overflow: 'hidden',
+					  transform: isActive ? 'scale(1.08)' : 'scale(1)',
+					  transition: 'all 0.35s ease',
+					}}
+				  >
+					<h3 style={{
+					  fontFamily: 'var(--font-display)',
+					  fontSize: '1.2rem',
+					  marginBottom: 10,
+					  marginTop: -10,
+					}}>
+					  {ev.title}
+					</h3>
+
+					<p style={{
+					  fontFamily: 'var(--font-body)',
+					  fontSize: '0.9rem',
+					  color: 'var(--text-light)',
+					  marginBottom: 16,
+					}}>
+					  {ev.desc}
+					</p>
+
+					{/* Includes */}
+					<div style={{ marginBottom: 20 }}>
+					  {ev.includes.map((item, j) => (
+						<div key={j} style={{
+						  display: 'flex',
+						  gap: 8,
+						  marginBottom: 6,
+						}}>
+						  <span style={{ color: 'var(--pink)' }}>✦</span>
+						  <span style={{ fontSize: '0.88rem' }}>{item}</span>
+						</div>
+					  ))}
+					</div>
+
+					{/* Price */}
+					<div style={{
+					  display: 'flex',
+					  justifyContent: 'space-between',
+					  alignItems: 'center',
+					}}>
+					  <p style={{
+						fontFamily: 'var(--font-display)',
+						fontSize: '1.2rem',
+						color: 'var(--pink)',
+					  }}>
+						{ev.from ? `K${ev.from}` : 'Custom'}
+					  </p>
+
+					  <Link to="/booking" className="btn-primary">
+						Book Now
+					  </Link>
+					</div>
+				  </div>
+				</div>
+			  )
+			})}
+
           </div>
         </div>
       </section>
@@ -265,7 +381,7 @@ export default function Events() {
           <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link to="/booking" className="btn-primary">Book a Consultation</Link>
             <a
-              href="https://wa.me/260XXXXXXXXX"
+              href="https://wa.me/260978615850"
               target="_blank" rel="noopener noreferrer"
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 8,
@@ -280,6 +396,13 @@ export default function Events() {
           </div>
         </div>
       </section>
+		<style>{`
+		  @keyframes fadeIn {
+			from { opacity: 0; }
+			to { opacity: 1; }
+		  }
+		`}</style>
+
     </div>
   )
 }

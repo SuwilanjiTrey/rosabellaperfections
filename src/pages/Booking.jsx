@@ -1,4 +1,6 @@
 import React, { useState } from 'react'
+import { db } from '../firebase/config'
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
 
 const EVENT_TYPES = [
   'Birthday Party', 'Baby Shower', 'Bridal Shower',
@@ -52,17 +54,39 @@ export default function Booking() {
     return e
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const errs = validate()
     if (Object.keys(errs).length > 0) { setErrors(errs); return }
 
     setLoading(true)
 
-    // Build WhatsApp message
     const selectedServices = SERVICES_LIST
       .filter(s => form.services.includes(s.id))
       .map(s => s.label).join(', ')
 
+    // ── 1. Save to Firestore ───────────────────────────────────────
+    try {
+      await addDoc(collection(db, 'rosabellaBookings'), {
+        name:             form.name,
+        phone:            form.phone,
+        email:            form.email || null,
+        eventType:        form.eventType,
+        eventDate:        form.eventDate,
+        guestCount:       form.guestCount || null,
+        services:         form.services,
+        servicesLabel:    selectedServices,
+        budget:           form.budget || null,
+        notes:            form.notes || null,
+        status:           'pending',
+        createdAt:        serverTimestamp(),
+        updatedAt:        serverTimestamp(),
+      })
+    } catch (e) {
+      // Don't block the user — WhatsApp still opens even if Firestore fails
+      console.error('[Booking] Firestore save failed:', e.message)
+    }
+
+    // ── 2. Build WhatsApp message ──────────────────────────────────
     const message = [
       '🌸 *Booking Request — Rosebella Perfections* 🌸',
       '',
@@ -85,11 +109,9 @@ export default function Booking() {
     const WHATSAPP_NUMBER = '260978615850'
     const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`
 
-    setTimeout(() => {
-      setLoading(false)
-      setSubmitted(true)
-      window.open(url, '_blank')
-    }, 1000)
+    setLoading(false)
+    setSubmitted(true)
+    window.open(url, '_blank')
   }
 
   if (submitted) {
